@@ -16,25 +16,27 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Serve static files from the "frontend" folder
-app.use(express.static(path.join(__dirname, 'frontend')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'index.html')));
+// Serve frontend
+const frontendPath = path.join(__dirname, 'frontend');
+app.use(express.static(frontendPath));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'), (err) => {
+        if (err) {
+            console.error('Error serving index.html:', err);
+            res.status(500).send('Cannot load Ramya Messenger. Error: ' + err.message);
+        }
+    });
+});
 
-// ---------- WhatsApp client ----------
+// ---------- WhatsApp / Baileys ----------
 let sock;
 let connected = false;
 
-// Media store: messageId -> { buffer, mimetype }
 const mediaStore = new Map();
-// Messages store per JID: { [jid]: { messages: [], lastSeen } }
 const chatStore = {};
-// Presence cache
 const presenceCache = {};
-
-// All frontend WebSocket clients
 const frontendClients = new Set();
 
-// Broadcast to all connected UIs
 function broadcast(data) {
     const str = JSON.stringify(data);
     frontendClients.forEach(client => {
@@ -42,13 +44,11 @@ function broadcast(data) {
     });
 }
 
-// ---------- Baileys Initialization ----------
 async function startWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
 
     sock = makeWASocket({
         auth: state,
-        // We handle QR manually
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -57,9 +57,8 @@ async function startWhatsApp() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log('Scan this QR code with WhatsApp (Linked Devices):\n');
+            console.log('New QR code generated');
             qrcode.generate(qr, { small: true });
-            // Also send to frontend
             broadcast({ type: 'qr', qr });
         }
 
@@ -72,7 +71,7 @@ async function startWhatsApp() {
             if (shouldReconnect) {
                 startWhatsApp();
             } else {
-                console.log('Logged out. Delete auth_info folder to re-link.');
+                console.log('Logged out. Delete auth_info to re-link.');
             }
         } else if (connection === 'open') {
             connected = true;
@@ -82,12 +81,10 @@ async function startWhatsApp() {
         }
     });
 
-    // Incoming messages
     sock.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
         if (!msg.message) return;
 
-        // Download media if present
         const content = extractMessageContent(msg.message);
         if (content && ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'].includes(content.type)) {
             try {
@@ -103,7 +100,6 @@ async function startWhatsApp() {
             }
         }
 
-        // Save to chat store
         const jid = msg.key.remoteJid;
         if (!chatStore[jid]) chatStore[jid] = { messages: [], lastSeen: Date.now() };
 
@@ -116,7 +112,6 @@ async function startWhatsApp() {
         broadcast({ type: 'message', message: formatted });
     });
 
-    // Presence updates
     sock.ev.on('presence.update', (json) => {
         const { presences } = json;
         if (presences) {
@@ -129,7 +124,6 @@ async function startWhatsApp() {
     });
 }
 
-// Format a Baileys message for frontend
 function formatMessage(msg) {
     const content = extractMessageContent(msg.message);
     const obj = {
@@ -166,12 +160,11 @@ function formatMessage(msg) {
     return obj;
 }
 
-// ---------- WebSocket handling ----------
+// ---------- WebSocket ----------
 wss.on('connection', (ws) => {
     console.log('Frontend client connected');
     frontendClients.add(ws);
 
-    // Send current state
     ws.send(JSON.stringify({ type: 'connection', status: connected ? 'connected' : 'connecting' }));
 
     ws.on('message', async (raw) => {
@@ -191,7 +184,6 @@ wss.on('connection', (ws) => {
     });
 });
 
-// ---------- Frontend request handler ----------
 async function handleFrontendMessage(ws, data) {
     if (!connected && data.type !== 'fetchChats') {
         ws.send(JSON.stringify({ type: 'error', error: 'WhatsApp not connected yet' }));
@@ -251,11 +243,10 @@ async function handleFrontendMessage(ws, data) {
             break;
 
         default:
-            console.log('Unknown frontend request:', data.type);
+            console.log('Unknown request:', data.type);
     }
 }
 
-// Build chat list from chatStore
 async function fetchAndBroadcastChats() {
     const chats = [];
     for (const jid in chatStore) {
@@ -279,7 +270,6 @@ async function fetchAndBroadcastChats() {
     broadcast({ type: 'chats', chats });
 }
 
-// Serve stored media
 app.get('/media/:id', (req, res) => {
     const entry = mediaStore.get(req.params.id);
     if (!entry) return res.status(404).send('Media not found');
@@ -287,14 +277,17 @@ app.get('/media/:id', (req, res) => {
     res.send(entry.buffer);
 });
 
-// ---------- START SERVER (ensure port 3000 is free) ----------
-const PORT = 3000;
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', connected });
+});
+
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
     startWhatsApp();
 });
 
-// Graceful shutdown
 process.on('SIGINT', () => {
     console.log('\nShutting down...');
     server.close();
