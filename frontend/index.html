@@ -1,32 +1,255 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Ramya Messenger</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramya Messenger</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;height:100vh;background:#e5ddd5}
+        .sidebar{width:350px;background:#fff;border-right:1px solid #ddd;display:flex;flex-direction:column}
+        .sidebar-header{padding:15px;background:#075e54;color:white}
+        .sidebar-header h2{margin-bottom:5px;font-size:1.2em}
+        .status{font-size:0.75em;opacity:0.9}
+        .qr-container{padding:20px;text-align:center;background:#fff;display:none;border-bottom:1px solid #ddd}
+        .qr-container.show{display:block}
+        .qr-container img{max-width:250px;border:3px solid #075e54;border-radius:10px}
+        .chat-list{flex:1;overflow-y:auto}
+        .chat-item{padding:12px 15px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center}
+        .chat-item:hover{background:#f5f5f5}
+        .chat-item.active{background:#e8f5e9}
+        .chat-item .avatar{width:45px;height:45px;border-radius:50%;background:#ddd;margin-right:12px;overflow:hidden;flex-shrink:0}
+        .chat-item .avatar img{width:100%;height:100%;object-fit:cover}
+        .chat-item .info{flex:1;min-width:0}
+        .chat-item .name{font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .chat-item .preview{font-size:0.8em;color:#667781;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+        .main{flex:1;display:flex;flex-direction:column;background:#efeae2}
+        .chat-header{padding:15px;background:#f0f2f5;border-bottom:1px solid #ddd;display:flex;align-items:center}
+        .chat-header .avatar{width:40px;height:40px;border-radius:50%;background:#ddd;margin-right:12px;overflow:hidden;flex-shrink:0}
+        .chat-header .avatar img{width:100%;height:100%;object-fit:cover}
+        .chat-header .info{flex:1}
+        .chat-header .name{font-weight:bold}
+        .chat-header .presence{font-size:0.75em;color:#667781}
+        .messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+        .message{max-width:70%;display:flex;flex-direction:column;animation:fadeIn 0.3s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .message.sent{align-self:flex-end}
+        .message.received{align-self:flex-start}
+        .bubble{padding:8px 12px;border-radius:8px;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,0.1)}
+        .sent .bubble{background:#d9fdd3}
+        .received .bubble{background:#fff}
+        .message img,.message video{max-width:250px;border-radius:4px;display:block;margin-bottom:5px}
+        .message audio{max-width:200px}
+        .message .time{font-size:0.7em;color:#667781;margin-top:2px}
+        .input-area{padding:15px;background:#f0f2f5;display:flex;align-items:center;gap:10px}
+        .input-area input[type="text"]{flex:1;padding:12px 15px;border:none;border-radius:25px;outline:none}
+        .input-area button{padding:12px 24px;background:#075e54;color:white;border:none;border-radius:25px;cursor:pointer;font-weight:bold}
+        .input-area button:hover{background:#064940}
+        .file-btn{background:#e4e6eb;cursor:pointer;padding:10px;border-radius:50%;display:flex;align-items:center;justify-content:center;width:40px;height:40px;position:relative}
+        .file-btn input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer}
+        .no-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#667781}
+        .no-chat .icon{font-size:4em;margin-bottom:20px}
+        .typing-indicator{padding:5px 20px;font-size:0.8em;color:#25d366;font-style:italic;display:none}
+        .typing-indicator.show{display:block}
+    </style>
 </head>
 <body>
-    <h1>Ramya Messenger</h1>
-    <p>Frontend is working!</p>
-    <div id="qr"></div>
-    <div id="status">Connecting...</div>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Ramya Messenger</h2>
+            <div class="status" id="status">Connecting...</div>
+        </div>
+        <div class="qr-container" id="qrContainer"></div>
+        <div class="chat-list" id="chatList"></div>
+    </div>
+    <div class="main">
+        <div class="no-chat" id="noChat">
+            <div class="icon">💬</div>
+            <div>Select a chat to start messaging</div>
+        </div>
+        <div id="chatWindow" style="display:none;flex-direction:column;height:100%">
+            <div class="chat-header">
+                <div class="avatar" id="chatAvatar"><img src="" alt=""></div>
+                <div class="info">
+                    <div class="name" id="chatName"></div>
+                    <div class="presence" id="chatPresence"></div>
+                </div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">typing...</div>
+            <div class="messages" id="messagesContainer"></div>
+            <div class="input-area">
+                <label class="file-btn" title="Send file">
+                    <span style="z-index:1">📎</span>
+                    <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+                </label>
+                <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
     <script>
-        const ws = new WebSocket((location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host);
-        ws.onopen = () => {
-            document.getElementById("status").textContent = "Backend connected";
-        };
-        ws.onmessage = (e) => {
-            const d = JSON.parse(e.data);
-            if (d.type === "qr") {
-                const img = document.createElement("img");
-                img.src = "https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=" + encodeURIComponent(d.qr);
-                img.style.maxWidth = "300px";
-                document.getElementById("qr").innerHTML = "<h2>Scan with WhatsApp</h2><p>Linked Devices → Link a Device</p>";
-                document.getElementById("qr").appendChild(img);
+        const ws=new WebSocket((location.protocol==="https:"?"wss:":"ws:")+"//"+location.host);
+        let activeChatJid=null;
+        const statusEl=document.getElementById("status");
+        const qrContainer=document.getElementById("qrContainer");
+        const chatListEl=document.getElementById("chatList");
+        const noChatEl=document.getElementById("noChat");
+        const chatWindow=document.getElementById("chatWindow");
+        const chatNameEl=document.getElementById("chatName");
+        const chatPresenceEl=document.getElementById("chatPresence");
+        const messagesContainer=document.getElementById("messagesContainer");
+        const messageInput=document.getElementById("messageInput");
+        const sendBtn=document.getElementById("sendBtn");
+        const fileInput=document.getElementById("fileInput");
+        const typingIndicator=document.getElementById("typingIndicator");
+        const chatsMap=new Map();
+
+        ws.onopen=()=>statusEl.textContent="Connected";
+        ws.onclose=()=>statusEl.textContent="Disconnected";
+        ws.onmessage=(event)=>{
+            const data=JSON.parse(event.data);
+            switch(data.type){
+                case "connection":
+                    if(data.status==="connected"){
+                        statusEl.textContent="WhatsApp Online";
+                        qrContainer.classList.remove("show");
+                        ws.send(JSON.stringify({type:"fetchChats"}));
+                    }else if(data.status==="connecting"){
+                        statusEl.textContent="Connecting...";
+                    }else{
+                        statusEl.textContent="Disconnected";
+                    }
+                    break;
+                case "qr":
+                    const qrImg=document.createElement("img");
+                    qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data="+encodeURIComponent(data.qr);
+                    qrImg.alt="WhatsApp QR";
+                    qrContainer.innerHTML='<p style="font-size:16px;font-weight:bold">Scan with WhatsApp</p><p style="font-size:12px;color:#667781">Linked Devices → Link a Device</p>';
+                    qrContainer.appendChild(qrImg);
+                    qrContainer.classList.add("show");
+                    break;
+                case "chats":
+                    renderChatList(data.chats);
+                    break;
+                case "message":
+                    handleIncomingMessage(data.message);
+                    break;
+                case "presence":
+                    if(data.jid===activeChatJid){
+                        chatPresenceEl.textContent=data.presence==="composing"?"typing...":data.presence;
+                        typingIndicator.className=data.presence==="composing"?"typing-indicator show":"typing-indicator";
+                    }
+                    break;
+                case "profilePicture":
+                    if(data.url)updateAvatar(data.jid,data.url);
+                    break;
+                case "messages":
+                    if(data.jid===activeChatJid)renderMessages(data.messages);
+                    break;
             }
-            if (d.type === "connection" && d.status === "connected") {
-                document.getElementById("status").textContent = "WhatsApp Online!";
-            }
         };
+
+        function renderChatList(chats){
+            chatListEl.innerHTML="";
+            if(chats.length===0){
+                chatListEl.innerHTML='<div style="padding:20px;text-align:center;color:#667781">No chats yet. Send a message to start!</div>';
+                return;
+            }
+            chats.forEach(chat=>{
+                chatsMap.set(chat.jid,chat);
+                const div=document.createElement("div");
+                div.className="chat-item";
+                div.innerHTML='<div class="avatar"><img src="" data-jid="'+chat.jid+'" alt=""></div><div class="info"><div class="name">'+(chat.name||chat.jid.split("@")[0])+'</div><div class="preview">'+(chat.lastMessage||"")+'</div></div>';
+                div.addEventListener("click",()=>openChat(chat.jid));
+                chatListEl.appendChild(div);
+            });
+        }
+
+        function openChat(jid){
+            activeChatJid=jid;
+            chatWindow.style.display="flex";
+            noChatEl.style.display="none";
+            const chat=chatsMap.get(jid);
+            chatNameEl.textContent=(chat&&chat.name)||jid.split("@")[0];
+            chatPresenceEl.textContent="";
+            document.querySelectorAll(".chat-item").forEach(el=>el.classList.remove("active"));
+            ws.send(JSON.stringify({type:"fetchProfilePicture",jid}));
+            ws.send(JSON.stringify({type:"fetchMessages",jid,limit:50}));
+        }
+
+        function renderMessages(msgs){
+            messagesContainer.innerHTML="";
+            if(msgs.length===0){
+                messagesContainer.innerHTML='<div style="text-align:center;color:#667781;margin-top:100px">No messages yet. Say hello!</div>';
+                return;
+            }
+            msgs.forEach(msg=>appendMessageToUI(msg,false));
+            messagesContainer.scrollTop=messagesContainer.scrollHeight;
+        }
+
+        function handleIncomingMessage(msg){
+            if(chatsMap.has(msg.remoteJid)){
+                const chat=chatsMap.get(msg.remoteJid);
+                chat.lastMessage=msg.text||msg.messageType;
+                chat.timestamp=msg.timestamp;
+            }
+            if(msg.remoteJid===activeChatJid){
+                appendMessageToUI(msg,true);
+                messagesContainer.scrollTop=messagesContainer.scrollHeight;
+            }
+        }
+
+        function appendMessageToUI(msg,scroll){
+            const div=document.createElement("div");
+            div.className="message "+(msg.fromMe?"sent":"received");
+            let content="";
+            if(msg.mediaUrl){
+                if(msg.mimeType&&msg.mimeType.startsWith("image/"))content='<img src="'+msg.mediaUrl+'" alt="Image">';
+                else if(msg.mimeType&&msg.mimeType.startsWith("video/"))content='<video controls><source src="'+msg.mediaUrl+'"></video>';
+                else if(msg.mimeType&&msg.mimeType.startsWith("audio/"))content='<audio controls src="'+msg.mediaUrl+'"></audio>';
+                else content='<a href="'+msg.mediaUrl+'" target="_blank">Download file</a>';
+                if(msg.text)content+="<div>"+msg.text+"</div>";
+            }else if(msg.text){
+                content="<div>"+msg.text+"</div>";
+            }
+            const time=new Date(msg.timestamp*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+            div.innerHTML='<div class="bubble">'+content+'</div><div class="time">'+time+'</div>';
+            messagesContainer.appendChild(div);
+            if(scroll)messagesContainer.scrollTop=messagesContainer.scrollHeight;
+        }
+
+        function updateAvatar(jid,url){
+            document.querySelectorAll('.chat-item .avatar img[data-jid="'+jid+'"]').forEach(img=>img.src=url||"");
+            if(jid===activeChatJid){
+                const headerImg=document.querySelector("#chatAvatar img");
+                if(headerImg)headerImg.src=url||"";
+            }
+        }
+
+        function sendText(){
+            const text=messageInput.value.trim();
+            if(!text||!activeChatJid)return;
+            ws.send(JSON.stringify({type:"text",to:activeChatJid,body:text}));
+            messageInput.value="";
+        }
+        sendBtn.addEventListener("click",sendText);
+        messageInput.addEventListener("keydown",(e)=>{if(e.key==="Enter"){e.preventDefault();sendText();}});
+        messageInput.addEventListener("input",()=>{
+            if(!activeChatJid)return;
+            ws.send(JSON.stringify({type:"presence",to:activeChatJid,presence:"composing"}));
+        });
+        fileInput.addEventListener("change",(e)=>{
+            const file=e.target.files[0];
+            if(!file||!activeChatJid)return;
+            const reader=new FileReader();
+            reader.onload=(ev)=>{
+                const base64=ev.target.result.split(",")[1];
+                const mediaType=file.type.startsWith("image/")?"image":file.type.startsWith("video/")?"video":file.type.startsWith("audio/")?"audio":"document";
+                ws.send(JSON.stringify({type:"media",to:activeChatJid,mediaType,data:base64,fileName:file.name,mimetype:file.type,caption:""}));
+            };
+            reader.readAsDataURL(file);
+            fileInput.value="";
+        });
     </script>
 </body>
 </html>
