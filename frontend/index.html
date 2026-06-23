@@ -3,19 +3,19 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Ramya Messenger</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;height:100vh;background:#e5ddd5}
+body{font-family:Arial,sans-serif;display:flex;height:100vh;background:#e5ddd5}
 .sidebar{width:350px;background:#fff;border-right:1px solid #ddd;display:flex;flex-direction:column}
 .sidebar-header{padding:15px;background:#075e54;color:#fff}
 .header-row{display:flex;justify-content:space-between;align-items:center}
-.new-chat-btn{background:#25d366;color:#fff;border:none;padding:8px 15px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:.9em}
+.new-chat-btn{background:#25d366;color:#fff;border:none;padding:8px 15px;border-radius:20px;cursor:pointer;font-weight:bold}
 .my-status-area{padding:12px 15px;background:#f0f2f5;border-bottom:1px solid #ddd;cursor:pointer;display:flex;align-items:center;gap:10px}
 .my-status-area:hover{background:#e8e8e8}
-.my-status-area .avatar{width:40px;height:40px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:1.2em;flex-shrink:0}
+.my-status-area .avatar{width:40px;height:40px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;flex-shrink:0}
 .my-status-area .info{flex:1;min-width:0}
 .my-status-area .name{font-weight:bold;font-size:.9em}
-.my-status-area .status-text{font-size:.75em;color:#667781;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.my-status-area .status-text{font-size:.75em;color:#667781}
 .status{font-size:.75em;opacity:.9;margin-top:5px}
-.qr-container{padding:20px;text-align:center;background:#fff;display:none;border-bottom:1px solid #ddd}
+.qr-container{padding:20px;text-align:center;background:#fff;display:none}
 .qr-container.show{display:block}
 .qr-container img{max-width:250px;border:3px solid #075e54;border-radius:10px}
 .chat-list{flex:1;overflow-y:auto}
@@ -35,8 +35,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;height
 .chat-header .name{font-weight:bold}
 .chat-header .presence{font-size:.75em;color:#667781}
 .messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
-.message{max-width:70%;display:flex;flex-direction:column;animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.message{max-width:70%;display:flex;flex-direction:column}
 .message.sent{align-self:flex-end}
 .message.received{align-self:flex-start}
 .bubble{padding:8px 12px;border-radius:8px;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.1);font-size:.95em;line-height:1.4}
@@ -49,25 +48,23 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;height
 .input-area{padding:15px;background:#f0f2f5;display:flex;align-items:center;gap:10px}
 .input-area input[type=text]{flex:1;padding:12px 15px;border:none;border-radius:25px;outline:none;font-size:.95em}
 .input-area button{padding:12px 24px;background:#075e54;color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:bold}
-.input-area button:hover{background:#064940}
 .file-btn{background:#e4e6eb;cursor:pointer;padding:10px;border-radius:50%;display:flex;align-items:center;justify-content:center;width:40px;height:40px;position:relative}
 .file-btn input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer}
 .no-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#667781}
-.no-chat .icon{font-size:4em;margin-bottom:20px}
 .typing-indicator{padding:5px 20px;font-size:.8em;color:#25d366;font-style:italic;display:none}
 .typing-indicator.show{display:block}
 .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
 .modal.show{display:flex}
 .modal-content{background:#fff;padding:30px;border-radius:10px;width:400px;max-width:90%}
 .modal-content h3{margin-bottom:15px}
-.modal-content input,.modal-content textarea{padding:12px;border:1px solid #ddd;border-radius:10px;width:100%;margin-bottom:15px;outline:none;font-size:1em;resize:vertical}
+.modal-content input,.modal-content textarea{padding:12px;border:1px solid #ddd;border-radius:10px;width:100%;margin-bottom:15px;outline:none;font-size:1em}
 .modal-content textarea{min-height:60px}
 .modal-content .btn-row{display:flex;gap:10px;justify-content:flex-end}
 .modal-content button{padding:10px 20px;border-radius:25px;border:none;cursor:pointer;font-weight:bold}
 .btn-start{background:#25d366;color:#fff}
 .btn-cancel{background:#ddd;color:#333}
 .presence-select{display:flex;gap:10px;margin-bottom:15px}
-.presence-option{padding:8px 15px;border-radius:20px;border:2px solid #ddd;cursor:pointer;font-size:.85em;text-align:center;flex:1}
+.presence-option{padding:8px 15px;border-radius:20px;border:2px solid #ddd;cursor:pointer;text-align:center;flex:1}
 .presence-option.active{border-color:#25d366;background:#e8f5e9;font-weight:bold}
 </style></head>
 <body>
@@ -78,13 +75,13 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;height
     </div>
     <div class="my-status-area" id="myStatusArea">
         <div class="avatar">M</div>
-        <div class="info"><div class="name">My Status</div><div class="status-text" id="myStatusText">Hey there! I am using Ramya Messenger</div></div>
+        <div class="info"><div class="name">My Status</div><div class="status-text" id="myStatusText">Hey there!</div></div>
     </div>
     <div class="qr-container" id="qrContainer"></div>
     <div class="chat-list" id="chatList"></div>
 </div>
 <div class="main">
-    <div class="no-chat" id="noChat"><div class="icon">💬</div><div>Select a chat or start a new one</div></div>
+    <div class="no-chat" id="noChat"><div style="font-size:4em;margin-bottom:20px">💬</div><div>Select a chat or start a new one</div></div>
     <div id="chatWindow" style="display:none;flex-direction:column;height:100%">
         <div class="chat-header"><div class="avatar" id="chatAvatar"><img src="" alt=""></div><div class="info"><div class="name" id="chatName"></div><div class="presence" id="chatPresence"></div></div></div>
         <div class="typing-indicator" id="typingIndicator">typing...</div>
@@ -93,108 +90,222 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;height
     </div>
 </div>
 <div class="modal" id="newChatModal"><div class="modal-content"><h3>Start New Chat</h3><p style="margin-bottom:10px;color:#667781;font-size:.9em">Enter phone number with country code</p><input type="text" id="phoneInput" placeholder="e.g. 919876543210"><div class="btn-row"><button class="btn-cancel" id="cancelChatBtn">Cancel</button><button class="btn-start" id="startChatBtn">Start Chat</button></div></div></div>
-<div class="modal" id="statusModal"><div class="modal-content"><h3>Update Your Status</h3><textarea id="statusInput" placeholder="What's on your mind?"></textarea><p style="font-size:.85em;color:#667781;margin-bottom:10px">Presence:</p><div class="presence-select"><div class="presence-option active" data-presence="available">🟢 Online</div><div class="presence-option" data-presence="unavailable">🟡 Away</div></div><div class="btn-row"><button class="btn-cancel" id="cancelStatusBtn">Cancel</button><button class="btn-start" id="saveStatusBtn">Save</button></div></div></div>
+<div class="modal" id="statusModal"><div class="modal-content"><h3>Update Your Status</h3><textarea id="statusInput" placeholder="What's on your mind?"></textarea><p style="font-size:.85em;color:#667781;margin-bottom:10px">Presence:</p><div class="presence-select"><div class="presence-option active" data-presence="available">Online</div><div class="presence-option" data-presence="unavailable">Away</div></div><div class="btn-row"><button class="btn-cancel" id="cancelStatusBtn">Cancel</button><button class="btn-start" id="saveStatusBtn">Save</button></div></div></div>
 <script>
-const ws=new WebSocket((location.protocol==="https:"?"wss:":"ws:")+"//"+location.host);
-let activeChatJid=null;
-const $=function(id){return document.getElementById(id);};
-const chatsMap=new Map();
-ws.onopen=function(){status.textContent="Connected";};
-ws.onclose=function(){status.textContent="Disconnected";};
-ws.onmessage=function(e){
-    var d=JSON.parse(e.data);
-    if(d.type==="connection"){
-        if(d.status==="connected"){status.textContent="WhatsApp Online";qrContainer.classList.remove("show");ws.send(JSON.stringify({type:"fetchChats"}));ws.send(JSON.stringify({type:"fetchMyStatus"}));}
-        else if(d.status==="connecting")status.textContent="Connecting...";
-        else status.textContent="Disconnected";
-    }else if(d.type==="qr"){
-        var img=document.createElement("img");img.src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data="+encodeURIComponent(d.qr);
-        qrContainer.innerHTML='<p style="font-size:16px;font-weight:bold">Scan with WhatsApp</p><p style="font-size:12px;color:#667781;margin-bottom:10px">Linked Devices Link a Device</p>';
-        qrContainer.appendChild(img);qrContainer.classList.add("show");
-    }else if(d.type==="chats"){renderChats(d.chats);}
-    else if(d.type==="message"){handleMsg(d.message);}
-    else if(d.type==="messages"&&d.jid===activeChatJid){renderMsgs(d.messages);}
-    else if(d.type==="profilePicture"&&d.url){updateAv(d.jid,d.url);}
-    else if(d.type==="presence"&&d.jid===activeChatJid){chatPresence.textContent=d.presence==="composing"?"typing...":d.presence==="available"?"online":d.presence;}
-    else if(d.type==="myStatus"){myStatusText.textContent=d.status||"Hey there!";statusInput.value=d.status||"";updatePresenceUI(d.presence);}
+var ws = new WebSocket((location.protocol==="https:"?"wss:":"ws:")+"//"+location.host);
+var activeChatJid = null;
+var chatsMap = {};
+
+function $(id){ return document.getElementById(id); }
+
+ws.onopen = function(){ $("status").textContent = "Connected"; };
+ws.onclose = function(){ $("status").textContent = "Disconnected"; };
+
+ws.onmessage = function(e){
+    var d = JSON.parse(e.data);
+    console.log("Received:", d.type, d);
+    
+    if(d.type === "connection"){
+        if(d.status === "connected"){
+            $("status").textContent = "WhatsApp Online";
+            $("qrContainer").classList.remove("show");
+            ws.send(JSON.stringify({type:"fetchChats"}));
+            ws.send(JSON.stringify({type:"fetchMyStatus"}));
+        } else if(d.status === "connecting"){
+            $("status").textContent = "Connecting...";
+        } else {
+            $("status").textContent = "Disconnected";
+        }
+    }
+    else if(d.type === "qr"){
+        var img = document.createElement("img");
+        img.src = "https://api.qrserver.com/v1/create-qr-code/?size=280x280&data="+encodeURIComponent(d.qr);
+        $("qrContainer").innerHTML = '<p style="font-size:16px;font-weight:bold">Scan with WhatsApp</p><p style="font-size:12px;color:#667781">Linked Devices → Link a Device</p>';
+        $("qrContainer").appendChild(img);
+        $("qrContainer").classList.add("show");
+    }
+    else if(d.type === "chats"){
+        renderChats(d.chats);
+    }
+    else if(d.type === "message"){
+        handleMessage(d.message);
+    }
+    else if(d.type === "messages"){
+        if(d.jid === activeChatJid){
+            renderMessages(d.messages);
+        }
+    }
+    else if(d.type === "profilePicture"){
+        if(d.url && d.jid === activeChatJid){
+            var img = $("chatAvatar").querySelector("img");
+            if(img) img.src = d.url;
+        }
+    }
+    else if(d.type === "presence"){
+        if(d.jid === activeChatJid){
+            $("chatPresence").textContent = d.presence === "composing" ? "typing..." : d.presence === "available" ? "online" : "offline";
+        }
+    }
+    else if(d.type === "myStatus"){
+        $("myStatusText").textContent = d.status || "Hey there!";
+        $("statusInput").value = d.status || "";
+    }
 };
-newChatBtn.onclick=function(){newChatModal.classList.add("show");phoneInput.value="";phoneInput.focus();};
-cancelChatBtn.onclick=function(){newChatModal.classList.remove("show");};
-startChatBtn.onclick=function(){
-    var p=phoneInput.value.trim().replace(/[\s\-\(\)\+]/g,"");
-    if(!p||!/^\d{10,15}$/.test(p)){alert("Enter valid number like 919876543210");return;}
-    var jid=p+"@s.whatsapp.net";newChatModal.classList.remove("show");
-    chatsMap.set(jid,{jid:jid,name:p,lastMessage:"",timestamp:Date.now()});
-    ws.send(JSON.stringify({type:"startChat",jid:jid}));openChat(jid);
-};
-myStatusArea.onclick=function(){statusModal.classList.add("show");statusInput.focus();};
-cancelStatusBtn.onclick=function(){statusModal.classList.remove("show");};
-statusModal.onclick=function(e){if(e.target===statusModal)statusModal.classList.remove("show");};
-saveStatusBtn.onclick=function(){
-    var text=statusInput.value.trim()||"Hey there! I am using Ramya Messenger";
-    var active=document.querySelector(".presence-option.active");
-    var presence=active?active.getAttribute("data-presence"):"available";
-    ws.send(JSON.stringify({type:"updateMyStatus",status:text,presence:presence}));
-    statusModal.classList.remove("show");
-};
-var presenceOptions=document.querySelectorAll(".presence-option");
-for(var i=0;i<presenceOptions.length;i++){
-    presenceOptions[i].onclick=function(){
-        for(var j=0;j<presenceOptions.length;j++)presenceOptions[j].classList.remove("active");
-        this.classList.add("active");
-    };
-}
-function updatePresenceUI(presence){
-    for(var i=0;i<presenceOptions.length;i++)presenceOptions[i].classList.remove("active");
-    var active=document.querySelector(".presence-option[data-presence=\""+presence+"\"]");
-    if(active)active.classList.add("active");
-}
-phoneInput.onkeydown=function(e){if(e.key==="Enter")startChatBtn.click();};
-sendBtn.onclick=function(){var t=messageInput.value.trim();if(t&&activeChatJid){ws.send(JSON.stringify({type:"text",to:activeChatJid,body:t}));messageInput.value="";}};
-messageInput.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();sendBtn.click();}};
-messageInput.oninput=function(){if(activeChatJid)ws.send(JSON.stringify({type:"presence",to:activeChatJid,presence:"composing"}));};
-fileInput.onchange=function(e){
-    var f=e.target.files[0];if(!f||!activeChatJid)return;
-    var r=new FileReader();r.onload=function(ev){
-        var b64=ev.target.result.split(",")[1];
-        var mt=f.type.startsWith("image/")?"image":f.type.startsWith("video/")?"video":f.type.startsWith("audio/")?"audio":"document";
-        ws.send(JSON.stringify({type:"media",to:activeChatJid,mediaType:mt,data:b64,fileName:f.name,mimetype:f.type,caption:""}));
-    };r.readAsDataURL(f);e.target.value="";
-};
+
 function renderChats(chats){
-    chatList.innerHTML="";
-    if(!chats.length){chatList.innerHTML='<div style="padding:20px;text-align:center;color:#667781">No chats yet. Click + New Chat!</div>';return;}
-    for(var i=0;i<chats.length;i++){
-        var c=chats[i];chatsMap.set(c.jid,c);
-        var div=document.createElement("div");div.className="chat-item";
-        var initial=(c.name||c.jid.split("@")[0]).charAt(0).toUpperCase();
-        var onlineDot=c.presence==="available"?'<div class="online-dot"></div>':"";
-        div.innerHTML='<div class="avatar">'+initial+onlineDot+'</div><div class="info"><div class="name">'+(c.name||c.jid.split("@")[0])+'</div><div class="preview">'+(c.lastMessage||"")+'</div></div>';
-        div.onclick=(function(jid){return function(){openChat(jid);};})(c.jid);
-        chatList.appendChild(div);
+    $("chatList").innerHTML = "";
+    if(!chats || chats.length === 0){
+        $("chatList").innerHTML = '<div style="padding:20px;text-align:center;color:#667781">No chats yet. Click + New Chat!</div>';
+        return;
+    }
+    for(var i = 0; i < chats.length; i++){
+        var c = chats[i];
+        chatsMap[c.jid] = c;
+        var div = document.createElement("div");
+        div.className = "chat-item";
+        var initial = (c.name || c.jid.split("@")[0]).charAt(0).toUpperCase();
+        var onlineDot = c.presence === "available" ? '<div class="online-dot"></div>' : "";
+        div.innerHTML = '<div class="avatar">'+initial+onlineDot+'</div><div class="info"><div class="name">'+(c.name||c.jid.split("@")[0])+'</div><div class="preview">'+(c.lastMessage||"")+'</div></div>';
+        div.onclick = (function(jid){ return function(){ openChat(jid); }; })(c.jid);
+        $("chatList").appendChild(div);
     }
 }
+
 function openChat(jid){
-    activeChatJid=jid;chatWindow.style.display="flex";noChat.style.display="none";
-    var c=chatsMap.get(jid);chatName.textContent=(c&&c.name)||jid.split("@")[0];chatPresence.textContent="";
-    var items=document.querySelectorAll(".chat-item");for(var i=0;i<items.length;i++)items[i].classList.remove("active");
+    activeChatJid = jid;
+    $("chatWindow").style.display = "flex";
+    $("noChat").style.display = "none";
+    var c = chatsMap[jid];
+    $("chatName").textContent = (c && c.name) || jid.split("@")[0];
+    $("chatPresence").textContent = "";
     ws.send(JSON.stringify({type:"fetchMessages",jid:jid,limit:100}));
     ws.send(JSON.stringify({type:"fetchProfilePicture",jid:jid}));
     ws.send(JSON.stringify({type:"fetchPresence",jid:jid}));
 }
-function renderMsgs(msgs){messagesContainer.innerHTML="";for(var i=0;i<msgs.length;i++)addMsg(msgs[i],false);messagesContainer.scrollTop=messagesContainer.scrollHeight;}
-function handleMsg(msg){
-    if(chatsMap.has(msg.remoteJid)){var c=chatsMap.get(msg.remoteJid);c.lastMessage=msg.text||msg.messageType;c.timestamp=msg.timestamp;}
-    if(msg.remoteJid===activeChatJid){addMsg(msg,true);messagesContainer.scrollTop=messagesContainer.scrollHeight;}
+
+function renderMessages(msgs){
+    $("messagesContainer").innerHTML = "";
+    if(!msgs || msgs.length === 0){
+        $("messagesContainer").innerHTML = '<div style="text-align:center;color:#667781;margin-top:100px">No messages yet. Say hello!</div>';
+        return;
+    }
+    for(var i = 0; i < msgs.length; i++){
+        addMessage(msgs[i], false);
+    }
+    $("messagesContainer").scrollTop = $("messagesContainer").scrollHeight;
+}
+
+function handleMessage(msg){
+    console.log("Message received:", msg);
+    if(chatsMap[msg.remoteJid]){
+        chatsMap[msg.remoteJid].lastMessage = msg.text || msg.messageType || "";
+        chatsMap[msg.remoteJid].timestamp = msg.timestamp;
+    }
+    if(msg.remoteJid === activeChatJid){
+        addMessage(msg, true);
+    }
     ws.send(JSON.stringify({type:"fetchChats"}));
 }
-function addMsg(msg,scroll){
-    var div=document.createElement("div");div.className="message "+(msg.fromMe?"sent":"received");
-    var c="";if(msg.mediaUrl){if(msg.mimeType&&msg.mimeType.indexOf("image/")===0)c='<img src="'+msg.mediaUrl+'">';else if(msg.mimeType&&msg.mimeType.indexOf("video/")===0)c='<video controls><source src="'+msg.mediaUrl+'"></video>';else c='<a href="'+msg.mediaUrl+'">Download</a>';if(msg.text)c+="<div>"+msg.text+"</div>";}else if(msg.text){c=msg.text;}
-    var ts=msg.timestamp?new Date(msg.timestamp*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";
-    var statusIcon=msg.fromMe?'<div class="msg-status">Sent</div>':"";
-    div.innerHTML='<div class="bubble">'+c+'</div><div class="time">'+ts+statusIcon+'</div>';
-    messagesContainer.appendChild(div);if(scroll)messagesContainer.scrollTop=messagesContainer.scrollHeight;
+
+function addMessage(msg, scroll){
+    var div = document.createElement("div");
+    div.className = "message " + (msg.fromMe ? "sent" : "received");
+    
+    var content = "";
+    if(msg.mediaUrl){
+        if(msg.mimeType && msg.mimeType.indexOf("image/") === 0){
+            content = '<img src="'+msg.mediaUrl+'" alt="Image">';
+        } else if(msg.mimeType && msg.mimeType.indexOf("video/") === 0){
+            content = '<video controls><source src="'+msg.mediaUrl+'"></video>';
+        } else {
+            content = '<a href="'+msg.mediaUrl+'" target="_blank">Download File</a>';
+        }
+        if(msg.text) content += "<div>"+msg.text+"</div>";
+    } else if(msg.text){
+        content = msg.text;
+    } else if(msg.messageType){
+        content = msg.messageType;
+    }
+    
+    var time = msg.timestamp ? new Date(msg.timestamp*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) : "";
+    var statusIcon = msg.fromMe ? '<div class="msg-status">Sent</div>' : "";
+    
+    div.innerHTML = '<div class="bubble">'+content+'</div><div class="time">'+time+statusIcon+'</div>';
+    $("messagesContainer").appendChild(div);
+    
+    if(scroll) $("messagesContainer").scrollTop = $("messagesContainer").scrollHeight;
 }
-function updateAv(jid,url){if(jid===activeChatJid){var i=chatAvatar.querySelector("img");if(i)i.src=url||"";}}
+
+// Button handlers
+$("newChatBtn").onclick = function(){
+    $("newChatModal").classList.add("show");
+    $("phoneInput").value = "";
+    $("phoneInput").focus();
+};
+$("cancelChatBtn").onclick = function(){ $("newChatModal").classList.remove("show"); };
+$("startChatBtn").onclick = function(){
+    var phone = $("phoneInput").value.trim().replace(/[\s\-\(\)\+]/g,"");
+    if(!phone || !/^\d{10,15}$/.test(phone)){
+        alert("Enter valid number like 919876543210");
+        return;
+    }
+    var jid = phone + "@s.whatsapp.net";
+    $("newChatModal").classList.remove("show");
+    chatsMap[jid] = {jid:jid, name:phone, lastMessage:"", timestamp:Date.now()};
+    ws.send(JSON.stringify({type:"startChat",jid:jid}));
+    openChat(jid);
+};
+
+$("myStatusArea").onclick = function(){
+    $("statusModal").classList.add("show");
+    $("statusInput").focus();
+};
+$("cancelStatusBtn").onclick = function(){ $("statusModal").classList.remove("show"); };
+$("saveStatusBtn").onclick = function(){
+    var text = $("statusInput").value.trim() || "Hey there! I am using Ramya Messenger";
+    var active = document.querySelector(".presence-option.active");
+    var presence = active ? active.getAttribute("data-presence") : "available";
+    ws.send(JSON.stringify({type:"updateMyStatus",status:text,presence:presence}));
+    $("statusModal").classList.remove("show");
+};
+
+var presenceOpts = document.querySelectorAll(".presence-option");
+for(var i = 0; i < presenceOpts.length; i++){
+    presenceOpts[i].onclick = function(){
+        for(var j = 0; j < presenceOpts.length; j++) presenceOpts[j].classList.remove("active");
+        this.classList.add("active");
+    };
+}
+
+$("sendBtn").onclick = function(){
+    var text = $("messageInput").value.trim();
+    if(text && activeChatJid){
+        ws.send(JSON.stringify({type:"text",to:activeChatJid,body:text}));
+        $("messageInput").value = "";
+        $("messageInput").focus();
+    }
+};
+$("messageInput").onkeydown = function(e){
+    if(e.key === "Enter"){
+        e.preventDefault();
+        $("sendBtn").click();
+    }
+};
+$("messageInput").oninput = function(){
+    if(activeChatJid){
+        ws.send(JSON.stringify({type:"presence",to:activeChatJid,presence:"composing"}));
+    }
+};
+$("fileInput").onchange = function(e){
+    var file = e.target.files[0];
+    if(!file || !activeChatJid) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+        var base64 = ev.target.result.split(",")[1];
+        var mediaType = file.type.indexOf("image/")===0 ? "image" : file.type.indexOf("video/")===0 ? "video" : file.type.indexOf("audio/")===0 ? "audio" : "document";
+        ws.send(JSON.stringify({type:"media",to:activeChatJid,mediaType:mediaType,data:base64,fileName:file.name,mimetype:file.type,caption:""}));
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+};
 </script></body></html>
