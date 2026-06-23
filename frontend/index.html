@@ -10,7 +10,10 @@
         .sidebar{width:350px;background:#fff;border-right:1px solid #ddd;display:flex;flex-direction:column}
         .sidebar-header{padding:15px;background:#075e54;color:white}
         .sidebar-header h2{margin-bottom:5px;font-size:1.2em}
-        .status{font-size:0.75em;opacity:0.9}
+        .sidebar-header .header-row{display:flex;justify-content:space-between;align-items:center}
+        .new-chat-btn{background:#25d366;color:white;border:none;padding:8px 15px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.9em}
+        .new-chat-btn:hover{background:#20bd5a}
+        .status{font-size:0.75em;opacity:0.9;margin-top:5px}
         .qr-container{padding:20px;text-align:center;background:#fff;display:none;border-bottom:1px solid #ddd}
         .qr-container.show{display:block}
         .qr-container img{max-width:250px;border:3px solid #075e54;border-radius:10px}
@@ -18,7 +21,7 @@
         .chat-item{padding:12px 15px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center}
         .chat-item:hover{background:#f5f5f5}
         .chat-item.active{background:#e8f5e9}
-        .chat-item .avatar{width:45px;height:45px;border-radius:50%;background:#ddd;margin-right:12px;overflow:hidden;flex-shrink:0}
+        .chat-item .avatar{width:45px;height:45px;border-radius:50%;background:#ddd;margin-right:12px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5em;color:#fff}
         .chat-item .avatar img{width:100%;height:100%;object-fit:cover}
         .chat-item .info{flex:1;min-width:0}
         .chat-item .name{font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -51,12 +54,24 @@
         .no-chat .icon{font-size:4em;margin-bottom:20px}
         .typing-indicator{padding:5px 20px;font-size:0.8em;color:#25d366;font-style:italic;display:none}
         .typing-indicator.show{display:block}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center}
+        .modal.show{display:flex}
+        .modal-content{background:white;padding:30px;border-radius:10px;width:400px;max-width:90%}
+        .modal-content h3{margin-bottom:20px}
+        .modal-content input{padding:12px;border:1px solid #ddd;border-radius:25px;width:100%;margin-bottom:15px;outline:none;font-size:1em}
+        .modal-content .btn-row{display:flex;gap:10px;justify-content:flex-end}
+        .modal-content button{padding:10px 20px;border-radius:25px;border:none;cursor:pointer;font-weight:bold}
+        .btn-start{background:#25d366;color:white}
+        .btn-cancel{background:#ddd;color:#333}
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Ramya Messenger</h2>
+            <div class="header-row">
+                <h2>Ramya Messenger</h2>
+                <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+            </div>
             <div class="status" id="status">Connecting...</div>
         </div>
         <div class="qr-container" id="qrContainer"></div>
@@ -65,7 +80,7 @@
     <div class="main">
         <div class="no-chat" id="noChat">
             <div class="icon">💬</div>
-            <div>Select a chat to start messaging</div>
+            <div>Select a chat or start a new one</div>
         </div>
         <div id="chatWindow" style="display:none;flex-direction:column;height:100%">
             <div class="chat-header">
@@ -87,6 +102,19 @@
             </div>
         </div>
     </div>
+
+    <div class="modal" id="newChatModal">
+        <div class="modal-content">
+            <h3>Start New Chat</h3>
+            <p style="margin-bottom:10px;color:#667781;font-size:0.9em">Enter phone number with country code</p>
+            <input type="text" id="phoneInput" placeholder="e.g. 919876543210 (no + or spaces)">
+            <div class="btn-row">
+                <button class="btn-cancel" id="cancelBtn">Cancel</button>
+                <button class="btn-start" id="startChatBtn">Start Chat</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const ws=new WebSocket((location.protocol==="https:"?"wss:":"ws:")+"//"+location.host);
         let activeChatJid=null;
@@ -102,6 +130,11 @@
         const sendBtn=document.getElementById("sendBtn");
         const fileInput=document.getElementById("fileInput");
         const typingIndicator=document.getElementById("typingIndicator");
+        const newChatBtn=document.getElementById("newChatBtn");
+        const newChatModal=document.getElementById("newChatModal");
+        const phoneInput=document.getElementById("phoneInput");
+        const startChatBtn=document.getElementById("startChatBtn");
+        const cancelBtn=document.getElementById("cancelBtn");
         const chatsMap=new Map();
 
         ws.onopen=()=>statusEl.textContent="Connected";
@@ -149,20 +182,46 @@
             }
         };
 
+        newChatBtn.addEventListener("click",()=>{
+            newChatModal.classList.add("show");
+            phoneInput.value="";
+            phoneInput.focus();
+        });
+        cancelBtn.addEventListener("click",()=>newChatModal.classList.remove("show"));
+        newChatModal.addEventListener("click",(e)=>{if(e.target===newChatModal)newChatModal.classList.remove("show");});
+        startChatBtn.addEventListener("click",()=>{
+            const phone=phoneInput.value.trim().replace(/[\s\-\(\)\+]/g,"");
+            if(!phone||!/^\d{10,15}$/.test(phone)){
+                alert("Please enter a valid phone number with country code (e.g. 919876543210)");
+                return;
+            }
+            const jid=phone+"@s.whatsapp.net";
+            newChatModal.classList.remove("show");
+            chatsMap.set(jid,{jid,name:phone,lastMessage:"",timestamp:Date.now()});
+            openChat(jid);
+            ws.send(JSON.stringify({type:"fetchChats"}));
+        });
+        phoneInput.addEventListener("keydown",(e)=>{if(e.key==="Enter")startChatBtn.click();});
+
         function renderChatList(chats){
             chatListEl.innerHTML="";
             if(chats.length===0){
-                chatListEl.innerHTML='<div style="padding:20px;text-align:center;color:#667781">No chats yet. Send a message to start!</div>';
+                chatListEl.innerHTML='<div style="padding:20px;text-align:center;color:#667781">No chats yet. Click "+ New Chat" to start!</div>';
                 return;
             }
             chats.forEach(chat=>{
                 chatsMap.set(chat.jid,chat);
                 const div=document.createElement("div");
                 div.className="chat-item";
-                div.innerHTML='<div class="avatar"><img src="" data-jid="'+chat.jid+'" alt=""></div><div class="info"><div class="name">'+(chat.name||chat.jid.split("@")[0])+'</div><div class="preview">'+(chat.lastMessage||"")+'</div></div>';
+                const initial=(chat.name||chat.jid.split("@")[0]).charAt(0).toUpperCase();
+                div.innerHTML='<div class="avatar" style="background:#25d366">'+initial+'</div><div class="info"><div class="name">'+(chat.name||chat.jid.split("@")[0])+'</div><div class="preview">'+(chat.lastMessage||"")+'</div></div>';
                 div.addEventListener("click",()=>openChat(chat.jid));
                 chatListEl.appendChild(div);
             });
+            if(activeChatJid&&chatsMap.has(activeChatJid)){
+                const chat=chatsMap.get(activeChatJid);
+                chatNameEl.textContent=(chat&&chat.name)||activeChatJid.split("@")[0];
+            }
         }
 
         function openChat(jid){
@@ -173,6 +232,8 @@
             chatNameEl.textContent=(chat&&chat.name)||jid.split("@")[0];
             chatPresenceEl.textContent="";
             document.querySelectorAll(".chat-item").forEach(el=>el.classList.remove("active"));
+            const items=document.querySelectorAll(".chat-item");
+            items.forEach(item=>{if(item.querySelector(".name")&&item.querySelector(".name").textContent===chatNameEl.textContent)item.classList.add("active");});
             ws.send(JSON.stringify({type:"fetchProfilePicture",jid}));
             ws.send(JSON.stringify({type:"fetchMessages",jid,limit:50}));
         }
