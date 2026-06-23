@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Ramya Messenger</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Ramya Messenger</h1>
+    <p>Frontend is working!</p>
+    <div id="qr"></div>
+    <div id="status">Connecting...</div>
+    <script>
+        const ws = new WebSocket((location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host);
+        ws.onopen = () => {
+            document.getElementById("status").textContent = "Backend connected";
+        };
+        ws.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            if (d.type === "qr") {
+                const img = document.createElement("img");
+                img.src = "https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=" + encodeURIComponent(d.qr);
+                img.style.maxWidth = "300px";
+                document.getElementById("qr").innerHTML = "<h2>Scan with WhatsApp</h2><p>Linked Devices → Link a Device</p>";
+                document.getElementById("qr").appendChild(img);
+            }
+            if (d.type === "connection" && d.status === "connected") {
+                document.getElementById("status").textContent = "WhatsApp Online!";
+            }
+        };
+    </script>
+</body>
+</html>
